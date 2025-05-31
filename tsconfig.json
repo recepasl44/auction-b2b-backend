@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+        // Hedeflenen JavaScript standardı. Node sürümünüze göre seçebilirsiniz.
+        "target": "es2020", 
+        // Modül sistemi, Node.js için commonjs kullanabilirsiniz.
+        "module": "commonjs", 
+        // Derlenmiş dosyaların çıkış klasörü.
+        "outDir": "./dist", 
+        // TypeScript kaynak dosyalarının bulunduğu klasör.
+        "rootDir": "./src",
+        // TypeScript’in sıkı tip kontrol ayarları.
+        "strict": true,
+        // EsModule modüllerle uyumluluk sağlar.
+        "esModuleInterop": true,
+        // Kütüphane tip denetimini atlar.
+        "skipLibCheck": true,
+        // Dosya isimlerinde tutarlı küçük-büyük harf kontrolü yapar.
+        "forceConsistentCasingInFileNames": true
+    },
+    // Projeye dahil edilecek dosya ve dizinler.
+    "include": [
+        "src"
+    ],
+    // Dışlanacak dosya ve dizinler.
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}
