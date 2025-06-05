@@ -22,13 +22,21 @@ public static async createRequest(
    * Tüm üretim taleplerini listele (admin için)
    */
   public static async getAllRequests(): Promise<any[]> {
- const sql = `
-      SELECT pr.*, p.*, u.name AS customerName, u.email AS customerEmail
+    const sql = `
+      SELECT pr.*, p.*, u.name AS customerName, u.email AS customerEmail,
+        CASE
+          WHEN pr.status = 'rejected' THEN 'rejected'
+          WHEN a.status = 'ended' THEN 'completed'
+          WHEN a.id IS NOT NULL THEN 'accepted'
+          ELSE 'pending'
+        END AS status
       FROM production_requests pr
       LEFT JOIN products p ON pr.product_id = p.id
       LEFT JOIN users u ON pr.customer_id = u.id
+      LEFT JOIN auctions a ON a.productionId = pr.id
       ORDER BY pr.id DESC
-    `;    const [rows] = await pool.query(sql);
+    `;
+    const [rows] = await pool.query(sql);
     return rows as any[];
   }
 
@@ -37,10 +45,17 @@ public static async createRequest(
    */
   public static async getRequestsByCustomer(customerId: number): Promise<any[]> {
     const sql = `
-      SELECT pr.*, p.*, u.name AS customerName, u.email AS customerEmail
+      SELECT pr.*, p.*, u.name AS customerName, u.email AS customerEmail,
+        CASE
+          WHEN pr.status = 'rejected' THEN 'rejected'
+          WHEN a.status = 'ended' THEN 'completed'
+          WHEN a.id IS NOT NULL THEN 'accepted'
+          ELSE 'pending'
+        END AS status
       FROM production_requests pr
       LEFT JOIN products p ON pr.product_id = p.id
       LEFT JOIN users u ON pr.customer_id = u.id
+      LEFT JOIN auctions a ON a.productionId = pr.id
       WHERE pr.customer_id = ?
       ORDER BY pr.id DESC
     `;
@@ -52,13 +67,21 @@ public static async createRequest(
    * Tek bir üretim talebi
    */
   public static async getRequestById(requestId: number): Promise<any | null> {
-  const sql = `
-      SELECT pr.*, p.*, u.name AS customerName, u.email AS customerEmail
+    const sql = `
+      SELECT pr.*, p.*, u.name AS customerName, u.email AS customerEmail,
+        CASE
+          WHEN pr.status = 'rejected' THEN 'rejected'
+          WHEN a.status = 'ended' THEN 'completed'
+          WHEN a.id IS NOT NULL THEN 'accepted'
+          ELSE 'pending'
+        END AS status
       FROM production_requests pr
       LEFT JOIN products p ON pr.product_id = p.id
       LEFT JOIN users u ON pr.customer_id = u.id
+      LEFT JOIN auctions a ON a.productionId = pr.id
       WHERE pr.id = ?
-    `;    const [rows] = await pool.query(sql, [requestId]);
+    `;
+    const [rows] = await pool.query(sql, [requestId]);
     if (!(rows as any[]).length) return null;
     return (rows as any[])[0];
   }
