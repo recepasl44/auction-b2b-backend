@@ -40,13 +40,15 @@ class AuthController {
 
       // Opsiyonel: Doğrulama maili gönder
       // verify link: http://frontend-url.com/verify?token=xxx  veya /api/auth/verifyEmail?token=xxx
-      const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verifyEmail?token=${verificationToken}`;
+      const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/verifyEmail?token=${verificationToken}`;
 
       try {
+        const html = `<p>Merhaba ${name},</p><p>Hesabınızı doğrulamak için aşağıdaki bağlantıya tıklayın.</p><p><a href="${verifyLink}">Hesabı Doğrula</a></p>`;
         await NotificationService.sendEmail(
           email,
-          'E-posta doğrulama',
-          `Merhaba, lütfen e-posta doğrulaması için şu linke tıklayın: ${verifyLink}`
+          'E-posta Doğrulama',
+          `Hesabınızı doğrulamak için link: ${verifyLink}`,
+          html
         );
       } catch (mailErr) {
         console.error('Mail gönderme hatası:', mailErr);
@@ -245,8 +247,14 @@ class AuthController {
       await pool.query(`UPDATE users SET reset_token = ? WHERE id = ?`, [resetToken, user.id]);
   
       // Mail gönder
-      const resetLink = `http://frontend-url.com/resetPassword?token=${resetToken}`;
-      await NotificationService.sendEmail(email, 'Şifre Sıfırlama', `Link: ${resetLink}`);
+      const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/resetPassword?token=${resetToken}`;
+      const html = `<p>Merhaba,</p><p>Şifrenizi sıfırlamak için aşağıdaki bağlantıyı kullanabilirsiniz.</p><p><a href="${resetLink}">Şifreyi Sıfırla</a></p>`;
+      await NotificationService.sendEmail(
+        email,
+        'Şifre Sıfırlama',
+        `Şifrenizi sıfırlamak için link: ${resetLink}`,
+        html
+      );
   
       return res.json({ message: 'Şifre sıfırlama maili gönderildi' });
     } catch (error) {

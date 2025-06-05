@@ -29,11 +29,15 @@ class ProductionRequestController {
         'SELECT email, name FROM users WHERE id = ? LIMIT 1',
         [userId]
       );
-      const user = (userRows as any[])[0];         try {
+      const user = (userRows as any[])[0];
+      try {
+        const detailLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/requests/${newId}`;
+        const html = `<p>Sayın ${user.name},</p><p>${productArray[0].name} ürünü için üretim talebiniz alınmıştır.</p><p>Detaylar için <a href="${detailLink}">tıklayın</a>.</p>`;
         await NotificationService.sendEmail(
           user.email,
           'Üretim Talebi Alındı',
-          `${productArray[0].name} ürünü için talebiniz alındı.`
+          `Talebiniz oluşturuldu: ${detailLink}`,
+          html
         );
       } catch (mailErr) {
         console.error('Mail gönderme hatası:', mailErr);

@@ -68,6 +68,12 @@ const userRole = (req as any).userRole;
             inviteStatus: inv.inviteStatus,
             nickname: inv.nickname,
           }));
+
+        if (auc.startPrice === 1 && auc.endPrice === 1 && auc.incrementStep === 1) {
+          delete auc.startPrice;
+          delete auc.endPrice;
+          delete auc.incrementStep;
+        }
         }      }
       return res.json({ auctions });
     } catch (error) {
@@ -160,6 +166,11 @@ const userRole = (req as any).userRole;
         }));
       }
 
+      if (auction.startPrice === 1 && auction.endPrice === 1 && auction.incrementStep === 1) {
+        delete auction.startPrice;
+        delete auction.endPrice;
+        delete auction.incrementStep;
+      }
       return res.json({ auction });
     } catch (error) {
       return res.status(500).json({ message: error});
@@ -180,8 +191,9 @@ const userRole = (req as any).userRole;
         startPrice,
         endPrice,
         incrementStep,
-        baseCurrency, 
+        baseCurrency,
         productionId: prodId,
+        sortDirection,
         supplierIds
       } = req.body;
  const productionId = parseInt(prodId ?? req.body.production_id, 10);
@@ -210,11 +222,12 @@ const userRole = (req as any).userRole;
       const safeStartPrice = startPrice ?? 0;
       const safeIncrementStep = incrementStep ?? 1;
       const safeBaseCurrency = baseCurrency ?? 'USD';
+      const safeSortDirection = (sortDirection || 'asc').toLowerCase();
 
       const insertSql = `
       INSERT INTO auctions
-     (title, startTime, endTime, startPrice, endPrice, incrementStep, baseCurrency, productionId, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'planned')
+     (title, startTime, endTime, startPrice, endPrice, incrementStep, baseCurrency, sortDirection, productionId, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'planned')
     `;
       const [result] = await pool.query(insertSql, [
         title,
@@ -224,6 +237,7 @@ const userRole = (req as any).userRole;
         endPrice,
         safeIncrementStep,
         safeBaseCurrency,
+        safeSortDirection,
         productionId
       ]);
 
@@ -366,23 +380,53 @@ public static async getPlaceBidHistory(req: Request, res: Response) {
       const auction = (auctionRows as any[])[0];
       const baseCurrency = auction.baseCurrency; // 'USD' gibi
 
+      const safeUserCurrency = (userCurrency || baseCurrency).toString();
+
       // Miktarı baseCurrency'ye dönüştür
-      const amountInBase = await CurrencyConversionService.convertAmount(amount, userCurrency, baseCurrency);
+      const amountInBase = await CurrencyConversionService.convertAmount(amount, safeUserCurrency, baseCurrency);
 
-      // Mevcut max teklifi bul (amountInBase' e göre)
-      const [bidRows] = await pool.query(`
-      SELECT MAX(amountInBase) as currentMax
-      FROM bids
-      WHERE auctionId = ?
-    `, [auctionId]);
-      const currentMax = (bidRows as any[])[0].currentMax || auction.startPrice;
+      const sortDirection = (auction.sortDirection || 'asc').toLowerCase();
+      const isFree =
+        auction.startPrice === 1 &&
+        auction.endPrice === 1 &&
+        auction.incrementStep === 1;
 
-      // incrementStep, endPrice kontrollerini "base" üzerinden yapmalıyız
-      if (amountInBase < currentMax + auction.incrementStep) {
-        return res.status(400).json({ message: `Minimum teklif: ${currentMax + auction.incrementStep} ${baseCurrency}` });
-      }
-      if (auction.endPrice && amountInBase > auction.endPrice) {
-        return res.status(400).json({ message: 'Bitiş fiyatını geçemezsiniz.' });
+      if (sortDirection === 'desc') {
+        const [bidRows] = await pool.query(
+          `SELECT MIN(amountInBase) as currentMin FROM bids WHERE auctionId = ?`,
+          [auctionId]
+        );
+        let currentMin = (bidRows as any[])[0].currentMin;
+        if (!isFree) {
+          currentMin = currentMin ?? auction.startPrice;
+          if (amountInBase > currentMin - auction.incrementStep) {
+            return res.status(400).json({
+              message: `Maksimum teklif: ${currentMin - auction.incrementStep} ${baseCurrency}`
+            });
+          }
+          if (auction.endPrice && amountInBase < auction.endPrice) {
+            return res.status(400).json({
+              message: 'Bitiş fiyatının altına inemezsiniz.'
+            });
+          }
+        }
+      } else {
+        const [bidRows] = await pool.query(
+          `SELECT MAX(amountInBase) as currentMax FROM bids WHERE auctionId = ?`,
+          [auctionId]
+        );
+        let currentMax = (bidRows as any[])[0].currentMax;
+        if (!isFree) {
+          currentMax = currentMax ?? auction.startPrice;
+          if (amountInBase < currentMax + auction.incrementStep) {
+            return res.status(400).json({
+              message: `Minimum teklif: ${currentMax + auction.incrementStep} ${baseCurrency}`
+            });
+          }
+          if (auction.endPrice && amountInBase > auction.endPrice) {
+            return res.status(400).json({ message: 'Bitiş fiyatını geçemezsiniz.' });
+          }
+        }
       }
 
       // Teklif kaydet
@@ -390,7 +434,7 @@ public static async getPlaceBidHistory(req: Request, res: Response) {
       INSERT INTO bids (auctionId, userId, amount, userCurrency, amountInBase)
       VALUES (?, ?, ?, ?, ?)
     `;
-      const [result] = await pool.query(sql, [auctionId, userId, amount, userCurrency, amountInBase]);
+      const [result] = await pool.query(sql, [auctionId, userId, amount, safeUserCurrency, amountInBase]);
 
       const bidId = (result as any).insertId;
       let bidTime = new Date().toISOString();
@@ -407,7 +451,7 @@ public static async getPlaceBidHistory(req: Request, res: Response) {
         // if query fails, keep default ISO string
       }
 
-      const price = `${amount}${userCurrency}`;
+      const price = `${amount}${safeUserCurrency}`;
 
       let createdAt = new Date().toISOString();
       if (bidId) {
