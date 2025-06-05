@@ -183,14 +183,14 @@ class AuthController {
 
       // Refresh token DB'de mevcut mu ve süresi dolmamış mı?
       const [rows] = await pool.query(
-        `SELECT userId FROM refresh_tokens WHERE token = ? AND expiresAt > NOW()`,
+        `SELECT user_id FROM refresh_tokens WHERE token = ? AND expires_at > NOW()`,
         [refreshToken]
       );
       if (!(rows as any[]).length) {
         return res.status(401).json({ message: 'Geçersiz refresh token' });
       }
 
-      const userId = (rows as any[])[0].userId;
+      const userId = (rows as any[])[0].user_id;
 
       // Yeni access token oluştur
       const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '1h' });
@@ -199,7 +199,7 @@ class AuthController {
       const newRefreshToken = crypto.randomBytes(40).toString('hex');
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       await pool.query(
-        `UPDATE refresh_tokens SET token = ?, expiresAt = ? WHERE token = ?`,
+        `UPDATE refresh_tokens SET token = ?, expires_at = ? WHERE token = ?`,
         [newRefreshToken, expiresAt, refreshToken]
       );
 
