@@ -380,8 +380,10 @@ public static async getPlaceBidHistory(req: Request, res: Response) {
       const auction = (auctionRows as any[])[0];
       const baseCurrency = auction.baseCurrency; // 'USD' gibi
 
+      const safeUserCurrency = (userCurrency || baseCurrency).toString();
+
       // Miktarı baseCurrency'ye dönüştür
-      const amountInBase = await CurrencyConversionService.convertAmount(amount, userCurrency, baseCurrency);
+      const amountInBase = await CurrencyConversionService.convertAmount(amount, safeUserCurrency, baseCurrency);
 
       const sortDirection = (auction.sortDirection || 'asc').toLowerCase();
       const isFree =
@@ -432,7 +434,7 @@ public static async getPlaceBidHistory(req: Request, res: Response) {
       INSERT INTO bids (auctionId, userId, amount, userCurrency, amountInBase)
       VALUES (?, ?, ?, ?, ?)
     `;
-      const [result] = await pool.query(sql, [auctionId, userId, amount, userCurrency, amountInBase]);
+      const [result] = await pool.query(sql, [auctionId, userId, amount, safeUserCurrency, amountInBase]);
 
       const bidId = (result as any).insertId;
       let bidTime = new Date().toISOString();
@@ -449,7 +451,7 @@ public static async getPlaceBidHistory(req: Request, res: Response) {
         // if query fails, keep default ISO string
       }
 
-      const price = `${amount}${userCurrency}`;
+      const price = `${amount}${safeUserCurrency}`;
 
       let createdAt = new Date().toISOString();
       if (bidId) {
