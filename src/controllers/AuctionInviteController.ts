@@ -87,6 +87,36 @@ class AuctionInviteController {
       return res.status(500).json({ message: 'Sunucu hatası' });
     }
   }
+
+  /**
+   * Daveti kabul etmek için kısayol endpointi
+   * POST /api/auctions/invites/:inviteId/accept
+   */
+  public static async accept(req: Request, res: Response) {
+    try {
+      const inviteId = parseInt(req.params.inviteId, 10);
+      const userRole = (req as any).userRole;
+      const userId = (req as any).userId;
+
+      if (userRole !== 'manufacturer') {
+        return res.status(403).json({ message: 'Bu işlemi sadece üreticiler yapabilir' });
+      }
+
+      const invite = await AuctionInviteService.getInviteById(inviteId);
+      if (!invite) {
+        return res.status(404).json({ message: 'Davet kaydı bulunamadı' });
+      }
+      if (invite.manufacturerId !== userId) {
+        return res.status(403).json({ message: 'Bu davet size ait değil' });
+      }
+
+      await AuctionInviteService.respondToInvite(inviteId, 'accepted');
+      return res.json({ message: 'Davet kabul edildi', inviteId });
+    } catch (error) {
+      console.error('AuctionInviteController.accept Error:', error);
+      return res.status(500).json({ message: 'Sunucu hatası' });
+    }
+  }
   
   /**
    * Davet durumunu güncelle (admin)

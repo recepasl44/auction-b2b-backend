@@ -67,4 +67,8 @@ auctionRouter.post('/respondInvite', authMiddleware, (req, res) => {
   Promise.resolve(AuctionInviteController.respond(req, res));
 });
 
+auctionRouter.post('/invites/:inviteId/accept', authMiddleware, (req, res) => {
+  Promise.resolve(AuctionInviteController.accept(req, res));
+});
+
 export default auctionRouter;
