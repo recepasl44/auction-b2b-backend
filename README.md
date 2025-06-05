@@ -30,4 +30,5 @@ curl -X POST http://localhost:3000/api/auctions/bid \
     "amount": 500,
     "userCurrency": "USD"
   }' # userCurrency defaults to the auction currency
+
 ```

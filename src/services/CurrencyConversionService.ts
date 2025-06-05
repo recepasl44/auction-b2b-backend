@@ -1,4 +1,3 @@
-// F:\b2b-auction-backend\src\services\CurrencyConversionService.ts
 import pool from '../db';
 import axios from 'axios';
 
@@ -12,6 +11,7 @@ class CurrencyConversionService {
    * DB'deki currency tablosundan base ve target para birimlerini alıp oranı hesaplar.
    */
   public static async getExchangeRate(base: string, target: string): Promise<number> {
+
     const baseCode = (base || '').trim().toUpperCase();
     const targetCode = (target || '').trim().toUpperCase();
 
@@ -49,6 +49,7 @@ class CurrencyConversionService {
   /**
    * Belirli tutarı (amount) base'ten target'a dönüştürür.
    */
+
   public static async convertAmount(
     amount: number,
     base: string,
