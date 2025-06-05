@@ -178,10 +178,13 @@ class UserManagementController {
 
       // Opsiyonel e-posta: "Hesabınız onaylandı, artık giriş yapabilirsiniz" vs.
       try {
+        const loginLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/login`;
+        const html = `<p>Merhaba ${user.name},</p><p>Hesabınız yönetici tarafından onaylandı.</p><p><a href="${loginLink}">Giriş Yap</a></p>`;
         await NotificationService.sendEmail(
           user.email,
-          'Hesabınız onaylandı',
-          `Merhaba, hesabınız yönetici tarafından onaylandı. Artık giriş yapabilirsiniz.`
+          'Hesabınız Onaylandı',
+          `Giriş yapmak için: ${loginLink}`,
+          html
         );
       } catch (mailErr) {
         console.error('Mail gönderilemedi:', mailErr);

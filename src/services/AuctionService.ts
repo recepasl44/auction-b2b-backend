@@ -15,11 +15,12 @@ class AuctionService {
     endPrice: number,
     incrementStep: number,
     baseCurrency: string,
+    sortDirection: string,
     productionId: number
   ): Promise<number> {
     const insertSql = `
-      INSERT INTO auctions (title, startTime, endTime, startPrice, endPrice, incrementStep, baseCurrency, productionId, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'planned')
+      INSERT INTO auctions (title, startTime, endTime, startPrice, endPrice, incrementStep, baseCurrency, sortDirection, productionId, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'planned')
     `;
     const [result] = await pool.query(insertSql, [
       title,
@@ -29,6 +30,7 @@ class AuctionService {
       endPrice,
       incrementStep,
       baseCurrency,
+      sortDirection,
       productionId
     ]);    const newId = (result as any).insertId;
     return newId;

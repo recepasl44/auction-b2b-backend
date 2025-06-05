@@ -2,6 +2,9 @@
 import dotenv from 'dotenv';
 dotenv.config(); // .env dosyasını yükle
 
+// Sunucu ve DB işlemlerinin Türkiye saatine göre çalışması için
+process.env.TZ = 'Europe/Istanbul';
+
 import express, { Application } from 'express';
 import cors from 'cors';
 import http from 'http';

@@ -13,7 +13,12 @@ class NotificationService {
    * Basit e-posta gönderimi (nodemailer).
    * Gerçek projede .env'den mail host, user, pass değerlerini alabilirsiniz.
    */
-  public static async sendEmail(to: string, subject: string, text: string) {
+  public static async sendEmail(
+    to: string,
+    subject: string,
+    text: string,
+    html?: string
+  ) {
     const transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST || 'smtp.yandex.com.tr',
       port: parseInt(process.env.MAIL_PORT || '465', 10),
@@ -25,11 +30,12 @@ class NotificationService {
     });
     const fromAddress = process.env.MAIL_FROM || process.env.MAIL_USER || 'no-reply@auction.com';
 
-    const mailOptions = {
+    const mailOptions: nodemailer.SendMailOptions = {
       from: `"B2B Auction" <${fromAddress}>`,
       to,
       subject,
-      text
+      text,
+      html
     };
 
    try {
@@ -43,13 +49,15 @@ class NotificationService {
   /**
    * Örnek: Açık artırma başladı, kullanıcılara duyuru
    */
-  public static async notifyAuctionStarted(auctionId: number, userEmails: string[]) {
+  public static async notifyAuctionStarted(
+    auctionId: number,
+    userEmails: string[]
+  ) {
+    const link = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auctions/${auctionId}`;
+    const text = `İhaleye katılmak için: ${link}`;
+    const html = `<p>Merhaba,</p><p>${auctionId} numaralı açık artırma başladı.</p><p><a href="${link}">İhaleye Git</a></p>`;
     for (const email of userEmails) {
-      await NotificationService.sendEmail(
-        email,
-        'Açık artırma başladı',
-        `Merhaba, ID'si ${auctionId} olan açık artırma başladı!`
-      );
+      await NotificationService.sendEmail(email, 'Açık artırma başladı', text, html);
     }
   }
 }
