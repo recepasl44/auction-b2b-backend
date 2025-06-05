@@ -22,7 +22,8 @@ class AuctionInviteService {
         INSERT INTO auction_invites (auctionId, manufacturerId, inviteStatus, nickname)
         VALUES (?, ?, 'invited', ?)
       `;
-      await pool.query(insertSql, [auctionId, manId, nickname]);
+      const [insertResult] = await pool.query(insertSql, [auctionId, manId, nickname]);
+      const inviteId = (insertResult as any).insertId;
 
       // Opsiyonel: E-posta gönder
       try {
@@ -30,9 +31,13 @@ class AuctionInviteService {
         if ((rows as any[]).length) {
           const email = (rows as any[])[0].email;
           const subject = 'Yeni Açık Artırma Daveti';
-          const link = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auctions/${auctionId}`;
-          const text = `İhaleye katılmak için: ${link}`;
-          const html = `<p>Merhaba,</p><p>${auctionId} numaralı açık artırmaya davet edildiniz.</p><p><a href="${link}">Katılmak için tıklayın</a></p>`;
+          const auctionLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auctions/${auctionId}`;
+          const acceptLink = `${process.env.BASE_URL || 'http://localhost:3000'}/auctions/invites/${inviteId}/accept`;
+          const text = `İhaleye katılmak için: ${auctionLink} - Kabul için: ${acceptLink}`;
+          const html = `<p>Merhaba,</p>
+            <p>${auctionId} numaralı açık artırmaya davet edildiniz.</p>
+            <p>Daveti kabul etmek için <a href="${acceptLink}">buraya tıklayın</a>.</p>
+            <p>Açık artırmayı incelemek için <a href="${auctionLink}">linke gidin</a>.</p>`;
           await NotificationService.sendEmail(email, subject, text, html);
         }
       } catch (e) {
