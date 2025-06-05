@@ -94,7 +94,7 @@ public static async createRequest(
    * Talep onaylama (admin)
    */
   public static async approveRequest(requestId: number): Promise<void> {
-    const sql = `UPDATE production_requests SET status = 'approved' WHERE id = ?`;
+    const sql = `UPDATE production_requests SET status = 'accepted' WHERE id = ?`;
     await pool.query(sql, [requestId]);
   }
 

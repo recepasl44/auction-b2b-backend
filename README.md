@@ -32,3 +32,9 @@ curl -X POST http://localhost:3000/api/auctions/bid \
   }' # userCurrency defaults to the auction currency
 
 ```
+
+## Accept Auction Invite
+```bash
+curl -X POST http://localhost:3000/api/auctions/invites/123/accept \
+  -H "Authorization: Bearer <TOKEN>"
+```
