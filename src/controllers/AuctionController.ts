@@ -394,8 +394,9 @@ public static async getPlaceBidHistory(req: Request, res: Response) {
           `SELECT MIN(amountInBase) as currentMin FROM bids WHERE auctionId = ?`,
           [auctionId]
         );
-        const currentMin = (bidRows as any[])[0].currentMin ?? auction.startPrice;
+        let currentMin = (bidRows as any[])[0].currentMin;
         if (!isFree) {
+          currentMin = currentMin ?? auction.startPrice;
           if (amountInBase > currentMin - auction.incrementStep) {
             return res.status(400).json({
               message: `Maksimum teklif: ${currentMin - auction.incrementStep} ${baseCurrency}`
@@ -412,8 +413,9 @@ public static async getPlaceBidHistory(req: Request, res: Response) {
           `SELECT MAX(amountInBase) as currentMax FROM bids WHERE auctionId = ?`,
           [auctionId]
         );
-        const currentMax = (bidRows as any[])[0].currentMax || auction.startPrice;
+        let currentMax = (bidRows as any[])[0].currentMax;
         if (!isFree) {
+          currentMax = currentMax ?? auction.startPrice;
           if (amountInBase < currentMax + auction.incrementStep) {
             return res.status(400).json({
               message: `Minimum teklif: ${currentMax + auction.incrementStep} ${baseCurrency}`
