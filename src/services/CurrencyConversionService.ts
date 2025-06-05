@@ -12,8 +12,21 @@ class CurrencyConversionService {
    * DB'deki currency tablosundan base ve target para birimlerini alıp oranı hesaplar.
    */
   public static async getExchangeRate(base: string, target: string): Promise<number> {
-    const [baseRows] = await pool.query(`SELECT exchange_rate FROM currencies WHERE code = ?`, [base]);
-    const [targetRows] = await pool.query(`SELECT exchange_rate FROM currencies WHERE code = ?`, [target]);
+    const baseCode = base.trim().toUpperCase();
+    const targetCode = target.trim().toUpperCase();
+
+    if (baseCode === targetCode) {
+      return 1;
+    }
+
+    const [baseRows] = await pool.query(
+      `SELECT exchange_rate FROM currencies WHERE code = ?`,
+      [baseCode]
+    );
+    const [targetRows] = await pool.query(
+      `SELECT exchange_rate FROM currencies WHERE code = ?`,
+      [targetCode]
+    );
 
     if (!(baseRows as any[]).length || !(targetRows as any[]).length) {
       throw new Error('Geçersiz para birimi');
@@ -32,8 +45,14 @@ class CurrencyConversionService {
   /**
    * Belirli tutarı (amount) base'ten target'a dönüştürür.
    */
-  public static async convertAmount(amount: number, base: string, target: string): Promise<number> {
-    const rate = await CurrencyConversionService.getExchangeRate(base, target);
+  public static async convertAmount(
+    amount: number,
+    base: string,
+    target: string
+  ): Promise<number> {
+    const baseCode = base.trim().toUpperCase();
+    const targetCode = target.trim().toUpperCase();
+    const rate = await CurrencyConversionService.getExchangeRate(baseCode, targetCode);
     return amount * rate;
   }
 

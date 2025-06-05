@@ -30,8 +30,10 @@ class AuctionInviteService {
         if ((rows as any[]).length) {
           const email = (rows as any[])[0].email;
           const subject = 'Yeni Açık Artırma Daveti';
-          const text = `Merhaba, ID: ${auctionId} olan açık artırmaya davet edildiniz!`;
-          await NotificationService.sendEmail(email, subject, text);
+          const link = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auctions/${auctionId}`;
+          const text = `İhaleye katılmak için: ${link}`;
+          const html = `<p>Merhaba,</p><p>${auctionId} numaralı açık artırmaya davet edildiniz.</p><p><a href="${link}">Katılmak için tıklayın</a></p>`;
+          await NotificationService.sendEmail(email, subject, text, html);
         }
       } catch (e) {
         console.error('Davet maili gönderilemedi:', e);
