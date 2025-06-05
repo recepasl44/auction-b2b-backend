@@ -45,6 +45,11 @@ productionRequestRouter.put('/:id/reject', authMiddleware, (req, res) => {
   Promise.resolve(ProductionRequestController.reject(req, res));
 });
 
+// PUT /api/productionRequests/:id/superReject
+productionRequestRouter.put('/:id/superReject', authMiddleware, (req, res) => {
+  Promise.resolve(ProductionRequestController.superReject(req, res));
+});
+
 /**
  * Opsiyonel: Üretim sürecini başlatma (#18)
  */
