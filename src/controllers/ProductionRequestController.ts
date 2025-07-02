@@ -268,6 +268,37 @@ class ProductionRequestController {
       return res.status(500).json({ message: 'Sunucu hatası' });
     }
   }
+
+  /**
+   * Super admin - Talebi reddet
+   */
+  public static async superReject(req: Request, res: Response) {
+    try {
+      const requestId = parseInt(req.params.id, 10);
+      const existing = await ProductionRequestService.getRequestById(requestId);
+      if (!existing) {
+        return res.status(404).json({ message: 'Üretim talebi bulunamadı' });
+      }
+
+      const userRole = (req as any).userRole;
+      if (userRole !== 'superAdmin') {
+        return res.status(403).json({ message: 'Bu işlemi sadece super admin yapabilir' });
+      }
+
+      if (existing.status !== 'pending') {
+        return res
+          .status(400)
+          .json({ message: `Bu talep '${existing.status}' durumunda. Reddedilemez.` });
+      }
+
+      await ProductionRequestService.rejectRequest(requestId);
+
+      return res.json({ message: 'Üretim talebi reddedildi', requestId });
+    } catch (error) {
+      console.error('ProductionRequestController.superReject Error:', error);
+      return res.status(500).json({ message: 'Sunucu hatası' });
+    }
+  }
   public static async startProduction(req: Request, res: Response) {
     try {
       const requestId = parseInt(req.params.id, 10);
