@@ -58,7 +58,7 @@ class AuctionInviteController {
    */
   public static async respond(req: Request, res: Response) {
     try {
-      const inviteId = parseInt(req.body.inviteId, 10);
+      const id = parseInt(req.body.inviteId, 10);
       const { action } = req.body;
       const userRole = (req as any).userRole;
       const userId = (req as any).userId;
@@ -68,25 +68,42 @@ class AuctionInviteController {
         return res.status(403).json({ message: 'Bu işlemi sadece üreticiler yapabilir' });
       }
 
-      // Kontrol: inviteId gerçekten bu userId'ye mi ait?
-      const invite = await AuctionInviteService.getInviteById(inviteId);
-      if (!invite) {
-        return res.status(404).json({ message: 'Davet kaydı bulunamadı' });
-      }
-    
-
       if (action !== 'accepted' && action !== 'declined') {
         return res.status(400).json({ message: 'Geçersiz action parametresi' });
       }
 
-      const updated = await AuctionInviteService.respondToInvite(
-        inviteId,
-        action as 'accepted' | 'declined'
-      );
+      // Önce id'yi gerçek davet id'si olarak kontrol et
+      let invite = await AuctionInviteService.getInviteById(id);
+      let updated = false;
+      if (invite && invite.manufacturerId === userId) {
+        updated = await AuctionInviteService.respondToInvite(
+          id,
+          action as 'accepted' | 'declined'
+        );
+      } else {
+        // inviteId mevcut değilse veya farklı kullanıcıya aitse, gelen id'yi auctionId olarak değerlendir
+        invite = await AuctionInviteService.getInviteByAuctionAndManufacturer(
+          id,
+          userId
+        );
+        if (!invite) {
+          return res.status(404).json({ message: 'Davet kaydı bulunamadı' });
+        }
+        updated = await AuctionInviteService.respondToInviteByAuction(
+          id,
+          userId,
+          action as 'accepted' | 'declined'
+        );
+      }
+
       if (!updated) {
         return res.status(500).json({ message: 'Davet durumu güncellenemedi' });
       }
-      return res.json({ message: `Davet ${action} olarak işaretlendi`, inviteId });
+      return res.json({
+        message: `Davet ${action} olarak işaretlendi`,
+        inviteId: invite.id,
+        auctionId: invite.auctionId
+      });
     } catch (error) {
       console.error('AuctionInviteController.respond Error:', error);
       return res.status(500).json({ message: 'Sunucu hatası' });
