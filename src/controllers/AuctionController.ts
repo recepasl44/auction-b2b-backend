@@ -227,7 +227,7 @@ const userRole = (req as any).userRole;
       const insertSql = `
       INSERT INTO auctions
      (title, startTime, endTime, startPrice, endPrice, incrementStep, baseCurrency, sortDirection, productionId, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'planned')
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `;
       const [result] = await pool.query(insertSql, [
         title,

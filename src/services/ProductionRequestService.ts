@@ -4,18 +4,23 @@ class ProductionRequestService {
   /**
    * Yeni üretim talebi oluştur
    */
-public static async createRequest(
-  customerId: number,
-  productId: number
-): Promise<number> {
-  const insertSql = `
-    INSERT INTO production_requests
-      (customer_id, product_id, status)
-    VALUES (?, ?, 'pending')
-  `;
-  const [result] = await pool.query(insertSql, [customerId, productId]);
-  return (result as any).insertId;   // yeni kayıt ID’si
-}
+  public static async createRequest(
+    customerId: number,
+    productId: number,
+    productName: string
+  ): Promise<number> {
+    const insertSql = `
+      INSERT INTO production_requests
+        (customer_id, product_id, product_name, status)
+      VALUES (?, ?, ?, 'pending')
+    `;
+    const [result] = await pool.query(insertSql, [
+      customerId,
+      productId,
+      productName
+    ]);
+    return (result as any).insertId; // yeni kayıt ID'si
+  }
 
 
   /**

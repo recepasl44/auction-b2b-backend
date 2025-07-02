@@ -4,7 +4,7 @@ import eventBus from '../events/EventBus';
 
 class AuctionService {
   /**
-   * Yeni bir açık artırma oluşturur (status = 'planned')
+   * Yeni bir açık artırma oluşturur (status = 'active')
    */
   public static async createAuction(
     title: string,
@@ -20,7 +20,7 @@ class AuctionService {
   ): Promise<number> {
     const insertSql = `
       INSERT INTO auctions (title, startTime, endTime, startPrice, endPrice, incrementStep, baseCurrency, sortDirection, productionId, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'planned')
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `;
     const [result] = await pool.query(insertSql, [
       title,
