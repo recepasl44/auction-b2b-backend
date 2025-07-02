@@ -78,13 +78,29 @@ SELECT ai.id as inviteId, ai.inviteStatus, ai.nickname,
     const [rows] = await pool.query(sql, [manufacturerId]);
     return rows as any[];
   }
-  public static async respondToInvite(inviteId: number, action: 'accepted' | 'declined') {
+  public static async respondToInvite(
+    inviteId: number,
+    action: 'accepted' | 'declined'
+  ): Promise<boolean> {
+    // Obtain auction and manufacturer ids for the invite so that all
+    // invites for the pair can be updated. This avoids cases where
+    // duplicate invites exist and an old invite prevents bidding.
+    const invite = await this.getInviteById(inviteId);
+    if (!invite) {
+      return false;
+    }
+
     const sql = `
       UPDATE auction_invites
       SET inviteStatus = ?
-      WHERE id = ?
+      WHERE auctionId = ? AND manufacturerId = ?
     `;
-    await pool.query(sql, [action, inviteId]);
+    const [result]: any = await pool.query(sql, [
+      action,
+      invite.auctionId,
+      invite.manufacturerId
+    ]);
+    return result && result.affectedRows > 0;
   }
     /**
    * Davet durumunu güncelle
