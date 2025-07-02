@@ -78,13 +78,14 @@ SELECT ai.id as inviteId, ai.inviteStatus, ai.nickname,
     const [rows] = await pool.query(sql, [manufacturerId]);
     return rows as any[];
   }
-  public static async respondToInvite(inviteId: number, action: 'accepted' | 'declined') {
+  public static async respondToInvite(inviteId: number, action: 'accepted' | 'declined'): Promise<boolean> {
     const sql = `
       UPDATE auction_invites
       SET inviteStatus = ?
       WHERE id = ?
     `;
-    await pool.query(sql, [action, inviteId]);
+    const [result]: any = await pool.query(sql, [action, inviteId]);
+    return result && result.affectedRows > 0;
   }
     /**
    * Davet durumunu güncelle

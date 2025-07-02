@@ -80,7 +80,13 @@ class AuctionInviteController {
         return res.status(400).json({ message: 'Geçersiz action parametresi' });
       }
 
-      await AuctionInviteService.respondToInvite(inviteId, action as 'accepted' | 'declined');
+      const updated = await AuctionInviteService.respondToInvite(
+        inviteId,
+        action as 'accepted' | 'declined'
+      );
+      if (!updated) {
+        return res.status(500).json({ message: 'Davet durumu güncellenemedi' });
+      }
       return res.json({ message: `Davet ${action} olarak işaretlendi`, inviteId });
     } catch (error) {
       console.error('AuctionInviteController.respond Error:', error);
@@ -110,7 +116,10 @@ class AuctionInviteController {
         return res.status(403).json({ message: 'Bu davet size ait değil' });
       }
 
-      await AuctionInviteService.respondToInvite(inviteId, 'accepted');
+      const updated = await AuctionInviteService.respondToInvite(inviteId, 'accepted');
+      if (!updated) {
+        return res.status(500).json({ message: 'Davet durumu güncellenemedi' });
+      }
       return res.json({ message: 'Davet kabul edildi', inviteId });
     } catch (error) {
       console.error('AuctionInviteController.accept Error:', error);
