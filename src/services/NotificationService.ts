@@ -1,6 +1,9 @@
 // F:\b2b-auction-backend\src\services\NotificationService.ts
 import nodemailer from 'nodemailer';
+import { Attachment } from 'nodemailer/lib/mailer';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 // Ensure environment variables are loaded even if this service is used standalone
 dotenv.config();
@@ -9,6 +12,42 @@ dotenv.config();
  *  - E-posta veya diğer bildirim kanalları üzerinden mesaj gönderme örneği.
  */
 class NotificationService {
+  /** Path to logo image used in all emails */
+  private static logoPath =
+    process.env.EMAIL_LOGO_PATH ||
+    path.resolve(__dirname, '../../uploads/image.png');
+
+  /** Wraps raw HTML content with a polished template and embedded logo */
+  private static wrapWithTemplate(content: string): string {
+    const year = new Date().getFullYear();
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+          <style>
+            body { font-family: Arial, Helvetica, sans-serif; background:#f4f4f4; margin:0; padding:30px; }
+            .container { max-width:600px; margin:0 auto; background:#ffffff; border:1px solid #ddd; border-radius:8px; overflow:hidden; }
+            .header { background:#fafafa; text-align:center; padding:20px; }
+            .content { padding:30px; color:#333; font-size:15px; line-height:1.6; }
+            .footer { background:#fafafa; text-align:center; padding:15px; color:#999; font-size:12px; }
+            a.button { display:inline-block; background:#007bff; color:#ffffff; padding:10px 20px; border-radius:4px; text-decoration:none; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <img src="cid:logo" alt="Logo" style="max-width:200px;" />
+            </div>
+            <div class="content">
+              ${content}
+            </div>
+            <div class="footer">&copy; ${year} B2B Auction</div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
   /**
    * Basit e-posta gönderimi (nodemailer).
    * Gerçek projede .env'den mail host, user, pass değerlerini alabilirsiniz.
@@ -30,12 +69,26 @@ class NotificationService {
     });
     const fromAddress = process.env.MAIL_FROM || process.env.MAIL_USER || 'no-reply@auction.com';
 
+    let finalHtml = html;
+    const attachments: Attachment[] = [];
+    if (html) {
+      finalHtml = NotificationService.wrapWithTemplate(html);
+      if (fs.existsSync(NotificationService.logoPath)) {
+        attachments.push({
+          filename: 'logo.png',
+          path: NotificationService.logoPath,
+          cid: 'logo'
+        });
+      }
+    }
+
     const mailOptions: nodemailer.SendMailOptions = {
       from: `"B2B Auction" <${fromAddress}>`,
       to,
       subject,
       text,
-      html
+      html: finalHtml,
+      attachments
     };
 
    try {
