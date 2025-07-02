@@ -102,42 +102,6 @@ SELECT ai.id as inviteId, ai.inviteStatus, ai.nickname,
     ]);
     return result && result.affectedRows > 0;
   }
-
-  /**
-   * Belirli bir açık artırma ve üretici için davet kaydı
-   */
-  public static async getInviteByAuctionAndManufacturer(
-    auctionId: number,
-    manufacturerId: number
-  ): Promise<any | null> {
-    const [rows] = await pool.query(
-      `SELECT * FROM auction_invites WHERE auctionId = ? AND manufacturerId = ? LIMIT 1`,
-      [auctionId, manufacturerId]
-    );
-    if (!(rows as any[]).length) return null;
-    return (rows as any[])[0];
-  }
-
-  /**
-   * Davete yanıt ver (auctionId ve manufacturerId ile)
-   */
-  public static async respondToInviteByAuction(
-    auctionId: number,
-    manufacturerId: number,
-    action: 'accepted' | 'declined'
-  ): Promise<boolean> {
-    const sql = `
-      UPDATE auction_invites
-      SET inviteStatus = ?
-      WHERE auctionId = ? AND manufacturerId = ?
-    `;
-    const [result]: any = await pool.query(sql, [
-      action,
-      auctionId,
-      manufacturerId
-    ]);
-    return result && result.affectedRows > 0;
-  }
     /**
    * Davet durumunu güncelle
    */
