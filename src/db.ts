@@ -10,6 +10,7 @@ const pool = mysql.createPool({
   password: process.env.DB_PASS || '',
   database: process.env.DB_NAME || 'b2b_auction',
   port:3306,
+   dateStrings: true,
   timezone: process.env.DB_TZ || '+03:00',
   waitForConnections: true,
   connectionLimit: 10,

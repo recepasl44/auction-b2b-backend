@@ -72,9 +72,7 @@ class AuctionInviteController {
       if (!invite) {
         return res.status(404).json({ message: 'Davet kaydı bulunamadı' });
       }
-      if (invite.manufacturerId !== userId) {
-        return res.status(403).json({ message: 'Bu davet size ait değil' });
-      }
+    
 
       if (action !== 'accepted' && action !== 'declined') {
         return res.status(400).json({ message: 'Geçersiz action parametresi' });
