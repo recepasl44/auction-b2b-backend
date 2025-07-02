@@ -2,6 +2,10 @@
 
 This project powers the B2B auction platform. Below are example CURL requests for the updated endpoints.
 
+### Email Template Logo
+
+All outgoing emails embed the logo from `uploads/image.png`. You can override the path with the `EMAIL_LOGO_PATH` environment variable if needed.
+
 ## Create Auction
 ```bash
 curl -X POST http://localhost:3000/api/auctions \
