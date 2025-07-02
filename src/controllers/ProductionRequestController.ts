@@ -14,25 +14,26 @@ class ProductionRequestController {
       const userId = (req as any).userId;
       const { productId } = req.body;
       const pid = parseInt(productId, 10);
-        const product = await ProductService.getById(pid);
+      const product = await ProductService.getById(pid);
       if (!product) {
         return res.status(404).json({ message: 'Ürün bulunamadı' });
       }
- const [productRows] = await pool.query(
-        'SELECT name FROM products WHERE id = ? LIMIT 1',
-        [pid]
+
+      const newId = await ProductionRequestService.createRequest(
+        userId,
+        pid,
+        product.name
       );
-      const productArray = productRows as any[];
-      const newId = await ProductionRequestService.createRequest(userId, pid);
-    console.log('Yeni üretim talebi oluşturuldu:', newId);
- const [userRows] = await pool.query(
+      console.log('Yeni üretim talebi oluşturuldu:', newId);
+
+      const [userRows] = await pool.query(
         'SELECT email, name FROM users WHERE id = ? LIMIT 1',
         [userId]
       );
       const user = (userRows as any[])[0];
       try {
         const detailLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/requests/${newId}`;
-        const html = `<p>Sayın ${user.name},</p><p>${productArray[0].name} ürünü için üretim talebiniz alınmıştır.</p><p>Detaylar için <a href="${detailLink}">tıklayın</a>.</p>`;
+        const html = `<p>Sayın ${user.name},</p><p>${product.name} ürünü için üretim talebiniz alınmıştır.</p><p>Detaylar için <a href="${detailLink}">tıklayın</a>.</p>`;
         await NotificationService.sendEmail(
           user.email,
           'Üretim Talebi Alındı',
