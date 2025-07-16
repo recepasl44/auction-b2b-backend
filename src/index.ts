@@ -22,6 +22,7 @@ import userRouter from './routes/userRoutes';
 import productRouter from './routes/productRoutes';
 import settingRouter from './routes/settingRoutes';
 import imageRouter from './routes/imageRoutes';
+import profileRouter from './routes/profileRoutes';
 import { initAuctionSocket } from './sockets/AuctionSocket';
 import path from 'path';
 // Middleware
@@ -80,6 +81,7 @@ app.use('/users', userRouter);
 app.use('/products', productRouter);
 app.use('/settings', settingRouter);
 app.use('/images', imageRouter);
+app.use('/profile', profileRouter);
 app.use('/productAttributes', productAttributeRouter);
 app.use('/dashboard', dashboardRouter);
 
