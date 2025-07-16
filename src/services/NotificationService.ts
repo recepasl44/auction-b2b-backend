@@ -17,6 +17,38 @@ class NotificationService {
     process.env.EMAIL_LOGO_PATH ||
     path.resolve(__dirname, '../../uploads/image.png');
 
+  /**
+   * Translate common Turkish phrases in the provided content to English.
+   * This simple dictionary-based approach avoids external dependencies.
+   */
+  private static translateToEnglish(content: string): string {
+    const translations: Record<string, string> = {
+      'Merhaba': 'Hello',
+      'Hesabınızı doğrulamak için aşağıdaki bağlantıya tıklayın.':
+        'Click the link below to verify your account.',
+      'Hesabı Doğrula': 'Verify Account',
+      'Şifrenizi sıfırlamak için aşağıdaki bağlantıyı kullanabilirsiniz.':
+        'You can use the link below to reset your password.',
+      'Şifreyi Sıfırla': 'Reset Password',
+      'Şifre Sıfırlama': 'Password Reset',
+      'E-posta Doğrulama': 'Email Verification',
+      'Giriş Yap': 'Login',
+      'Hesabınız yönetici tarafından onaylandı.':
+        'Your account has been approved by the administrator.',
+      'Hesabınız Onaylandı': 'Account Approved',
+      'Daveti kabul etmek için': 'To accept the invitation',
+      'Açık artırmayı incelemek için': 'To view the auction',
+      'Yeni Açık Artırma Daveti': 'New Auction Invitation',
+      'Açık artırma başladı': 'Auction Started'
+    };
+
+    for (const [tr, en] of Object.entries(translations)) {
+      const regex = new RegExp(tr, 'g');
+      content = content.replace(regex, en);
+    }
+    return content;
+  }
+
   /** Wraps raw HTML content with a polished template and embedded logo */
   private static wrapWithTemplate(content: string): string {
     const year = new Date().getFullYear();
@@ -68,11 +100,14 @@ class NotificationService {
       }
     });
     const fromAddress = process.env.MAIL_FROM || process.env.MAIL_USER || 'no-reply@auction.com';
+    // Translate text and HTML content to English before sending
+    const translatedText = NotificationService.translateToEnglish(text);
+    let translatedHtml = html ? NotificationService.translateToEnglish(html) : undefined;
 
-    let finalHtml = html;
+    let finalHtml = translatedHtml;
     const attachments: Attachment[] = [];
-    if (html) {
-      finalHtml = NotificationService.wrapWithTemplate(html);
+    if (translatedHtml) {
+      finalHtml = NotificationService.wrapWithTemplate(translatedHtml);
       if (fs.existsSync(NotificationService.logoPath)) {
         attachments.push({
           filename: 'logo.png',
@@ -86,7 +121,7 @@ class NotificationService {
       from: `"B2B Auction" <${fromAddress}>`,
       to,
       subject,
-      text,
+      text: translatedText,
       html: finalHtml,
       attachments
     };
