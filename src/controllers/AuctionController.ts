@@ -130,14 +130,6 @@ const userRole = (req as any).userRole;
           product.images = (product.images || []).map((img: string) =>
             fileUrl(req.protocol, req.get('host') || '', img)
           );
-          auction.product = product;        }
-      }
-      if (auction.product_id) {
-        const product = await ProductService.getById(auction.product_id);
-        if (product) {
-          product.images = (product.images || []).map((img: string) =>
-            fileUrl(req.protocol, req.get('host') || '', img)
-          );
           auction.product = product;
         }
       }
