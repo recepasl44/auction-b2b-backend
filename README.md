@@ -42,3 +42,29 @@ curl -X POST http://localhost:3000/api/auctions/bid \
 curl -X POST http://localhost:3000/api/auctions/invites/123/accept \
   -H "Authorization: Bearer <TOKEN>"
 ```
+
+## Update Profile Image
+```bash
+curl -X POST http://localhost:3000/api/profile/image \
+  -H "Authorization: Bearer <TOKEN>" \
+  -F image=@/path/to/avatar.png
+```
+
+## Delete Profile Image
+```bash
+curl -X DELETE http://localhost:3000/api/profile/image \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+## Admin: Create User
+```bash
+curl -X POST http://localhost:3000/api/users \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "new@example.com",
+    "password": "Secret123",
+    "name": "New User",
+    "role_id": 2
+  }'
+```
