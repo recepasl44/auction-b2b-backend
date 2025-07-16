@@ -1,5 +1,5 @@
 import pool from '../db';
-import { findImagesForProduct, findImagesForCategory } from '../utils/productImages';
+import { findImagesForProduct } from '../utils/productImages';
 
 class ProductService {
   public static async createProduct(
@@ -57,9 +57,8 @@ class ProductService {
       images: r.images ? (r.images as string).split(',') : []
     }));
     for (const p of products) {
-      const extraName = findImagesForProduct(p.name);
-      const extraCategory = findImagesForCategory(p.category);
-      p.images = Array.from(new Set([...p.images, ...extraName, ...extraCategory]));
+      const extra = findImagesForProduct(p.name);
+      p.images = Array.from(new Set([...p.images, ...extra]));
     }
     return products;
   }
@@ -83,9 +82,8 @@ class ProductService {
     product.attributes = Object.fromEntries(
       (attrs as any[]).map((r) => [r.attrKey, r.attrValue])
     );
-    const extraName = findImagesForProduct(product.name);
-    const extraCategory = findImagesForCategory(product.category);
-    product.images = Array.from(new Set([...product.images, ...extraName, ...extraCategory]));
+    const extra = findImagesForProduct(product.name);
+    product.images = Array.from(new Set([...product.images, ...extra]));
     return product;
   }
 
