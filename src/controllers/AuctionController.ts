@@ -7,6 +7,7 @@ import CurrencyConversionService from '../services/CurrencyConversionService';
 import AuctionInviteService from '../services/AuctionInviteService';
 import ProductService from '../services/ProductService';
 import { fileUrl } from '../utils/url';
+import { findImagesForProduct, findImagesForCategory } from '../utils/productImages';
 import BidService from '../services/BidService';
 
 /**
@@ -130,15 +131,19 @@ const userRole = (req as any).userRole;
           product.images = (product.images || []).map((img: string) =>
             fileUrl(req.protocol, req.get('host') || '', img)
           );
-          auction.product = product;        }
-      }
-      if (auction.product_id) {
-        const product = await ProductService.getById(auction.product_id);
-        if (product) {
-          product.images = (product.images || []).map((img: string) =>
-            fileUrl(req.protocol, req.get('host') || '', img)
-          );
           auction.product = product;
+        }
+      } else if (auction.product_name) {
+        const extraName = findImagesForProduct(auction.product_name);
+        const extraCategory = findImagesForCategory(auction.product_name);
+        const imgs = Array.from(new Set([...extraName, ...extraCategory]));
+        if (imgs.length) {
+          auction.product = {
+            name: auction.product_name,
+            images: imgs.map((img) =>
+              fileUrl(req.protocol, req.get('host') || '', img)
+            )
+          } as any;
         }
       }
 
