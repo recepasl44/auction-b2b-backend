@@ -40,7 +40,7 @@ class AuthController {
 
       // Opsiyonel: Doğrulama maili gönder
       // verify link: http://frontend-url.com/verify?token=xxx  veya /api/auth/verifyEmail?token=xxx
-      const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/verifyEmail?token=${verificationToken}`;
+      const verifyLink = `${process.env.FRONTEND_URL || 'https://panel.demaxtore.com'}/verifyEmail?token=${verificationToken}`;
 
       try {
         const html = `<p>Merhaba ${name},</p><p>Hesabınızı doğrulamak için aşağıdaki bağlantıya tıklayın.</p><p><a href="${verifyLink}">Hesabı Doğrula</a></p>`;
@@ -247,7 +247,7 @@ class AuthController {
       await pool.query(`UPDATE users SET reset_token = ? WHERE id = ?`, [resetToken, user.id]);
   
       // Mail gönder
-      const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/resetPassword?token=${resetToken}`;
+      const resetLink = `${process.env.FRONTEND_URL || 'https://panel.demaxtore.com'}/resetPassword?token=${resetToken}`;
       const html = `<p>Merhaba,</p><p>Şifrenizi sıfırlamak için aşağıdaki bağlantıyı kullanabilirsiniz.</p><p><a href="${resetLink}">Şifreyi Sıfırla</a></p>`;
       await NotificationService.sendEmail(
         email,

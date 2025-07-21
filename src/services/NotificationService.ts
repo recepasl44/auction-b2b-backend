@@ -141,7 +141,7 @@ class NotificationService {
     auctionId: number,
     userEmails: string[]
   ) {
-    const link = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auctions/${auctionId}`;
+    const link = `${process.env.FRONTEND_URL || 'https://panel.demaxtore.com'}/auctions/${auctionId}`;
     const text = `İhaleye katılmak için: ${link}`;
     const html = `<p>Merhaba,</p><p>${auctionId} numaralı açık artırma başladı.</p><p><a href="${link}">İhaleye Git</a></p>`;
     for (const email of userEmails) {

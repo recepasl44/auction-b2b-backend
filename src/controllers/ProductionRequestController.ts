@@ -32,7 +32,7 @@ class ProductionRequestController {
       );
       const user = (userRows as any[])[0];
       try {
-        const detailLink = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/requests/${newId}`;
+        const detailLink = `${process.env.FRONTEND_URL || 'https://panel.demaxtore.com'}/requests/${newId}`;
         const html = `<p>Sayın ${user.name},</p><p>${product.name} ürünü için üretim talebiniz alınmıştır.</p><p>Detaylar için <a href="${detailLink}">tıklayın</a>.</p>`;
         await NotificationService.sendEmail(
           user.email,
