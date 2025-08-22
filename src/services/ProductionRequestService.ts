@@ -40,10 +40,8 @@ class ProductionRequestService {
         p.updatedAt AS productUpdatedAt,
         u.name AS customerName, u.email AS customerEmail,
         CASE
-          WHEN pr.status = 'rejected' THEN 'rejected'
-          WHEN a.status = 'ended' THEN 'completed'
-          WHEN a.id IS NOT NULL THEN 'accepted'
-          ELSE 'pending'
+          WHEN pr.status = 'accepted' AND a.status = 'ended' THEN 'completed'
+          ELSE pr.status
         END AS status
         FROM production_requests pr
         LEFT JOIN products p ON pr.product_id = p.id
@@ -72,10 +70,8 @@ class ProductionRequestService {
         p.updatedAt AS productUpdatedAt,
         u.name AS customerName, u.email AS customerEmail,
         CASE
-          WHEN pr.status = 'rejected' THEN 'rejected'
-          WHEN a.status = 'ended' THEN 'completed'
-          WHEN a.id IS NOT NULL THEN 'accepted'
-          ELSE 'pending'
+          WHEN pr.status = 'accepted' AND a.status = 'ended' THEN 'completed'
+          ELSE pr.status
         END AS status
         FROM production_requests pr
         LEFT JOIN products p ON pr.product_id = p.id
@@ -105,10 +101,8 @@ class ProductionRequestService {
         p.updatedAt AS productUpdatedAt,
         u.name AS customerName, u.email AS customerEmail,
         CASE
-          WHEN pr.status = 'rejected' THEN 'rejected'
-          WHEN a.status = 'ended' THEN 'completed'
-          WHEN a.id IS NOT NULL THEN 'accepted'
-          ELSE 'pending'
+          WHEN pr.status = 'accepted' AND a.status = 'ended' THEN 'completed'
+          ELSE pr.status
         END AS status
         FROM production_requests pr
         LEFT JOIN products p ON pr.product_id = p.id

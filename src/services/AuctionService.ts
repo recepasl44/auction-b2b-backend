@@ -32,7 +32,15 @@ class AuctionService {
       baseCurrency,
       sortDirection,
       productionId
-    ]);    const newId = (result as any).insertId;
+    ]);
+    const newId = (result as any).insertId;
+
+    // Üretim talebi oluşturulan açık artırma ile kabul edilmiş sayılır
+    await pool.query(
+      `UPDATE production_requests SET status = 'accepted' WHERE id = ?`,
+      [productionId]
+    );
+
     return newId;
   }
 
