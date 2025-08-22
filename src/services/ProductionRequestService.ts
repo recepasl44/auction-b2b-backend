@@ -46,7 +46,10 @@ class ProductionRequestService {
         FROM production_requests pr
         LEFT JOIN products p ON pr.product_id = p.id
         LEFT JOIN users u ON pr.customer_id = u.id
-        LEFT JOIN auctions a ON a.productionId = pr.id
+        LEFT JOIN (
+          SELECT productionId, status FROM auctions GROUP BY productionId
+        ) a ON a.productionId = pr.id
+        GROUP BY pr.id
         ORDER BY pr.id DESC
       `;
     const [rows] = await pool.query(sql);
@@ -76,8 +79,11 @@ class ProductionRequestService {
         FROM production_requests pr
         LEFT JOIN products p ON pr.product_id = p.id
         LEFT JOIN users u ON pr.customer_id = u.id
-        LEFT JOIN auctions a ON a.productionId = pr.id
+        LEFT JOIN (
+          SELECT productionId, status FROM auctions GROUP BY productionId
+        ) a ON a.productionId = pr.id
         WHERE pr.customer_id = ?
+        GROUP BY pr.id
         ORDER BY pr.id DESC
       `;
     const [rows] = await pool.query(sql, [customerId]);
@@ -107,8 +113,11 @@ class ProductionRequestService {
         FROM production_requests pr
         LEFT JOIN products p ON pr.product_id = p.id
         LEFT JOIN users u ON pr.customer_id = u.id
-        LEFT JOIN auctions a ON a.productionId = pr.id
+        LEFT JOIN (
+          SELECT productionId, status FROM auctions GROUP BY productionId
+        ) a ON a.productionId = pr.id
         WHERE pr.id = ?
+        GROUP BY pr.id
       `;
     const [rows] = await pool.query(sql, [requestId]);
     if (!(rows as any[]).length) return null;
