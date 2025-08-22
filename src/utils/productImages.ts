@@ -2,9 +2,11 @@ import fs from 'fs';
 import path from 'path';
 
 const CATEGORY_IMAGE_MAP: Record<string, string> = {
-  'flour': 'Sunflower oil ORTA.png',
-  'spaghetti': 'spaghetti ORTA_.png',
-  'fresh egg': 'fresh egg ORTA.png',
+  'flour': 'wheat flour orta.png',
+  'spaghetti': 'spaghetti ANA.png',
+  'fresh egg': 'fresh egg.png',
+  'sunflower oil': 'sunflower oil.png',
+  'short-cut pasta': 'spaghetti ANA.png',
   'wheat flour': 'wheat flour orta.png'
 };
 
