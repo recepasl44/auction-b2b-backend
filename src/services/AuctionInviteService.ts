@@ -32,7 +32,7 @@ class AuctionInviteService {
           const email = (rows as any[])[0].email;
           const subject = 'Yeni Açık Artırma Daveti';
           const auctionLink = `${process.env.FRONTEND_URL || 'https://panel.demaxtore.com'}/auctions/${auctionId}`;
-          const acceptLink = `${process.env.BASE_URL || 'http://api.demaxtore.com'}/auctions/invites/${inviteId}/accept`;
+          const acceptLink = `${process.env.BASE_URL || 'https://api.demaxtore.com'}/auctions/invites/${inviteId}/accept`;
           const text = `İhaleye katılmak için: ${auctionLink} - Kabul için: ${acceptLink}`;
           const html = `<p>Merhaba,</p>
             <p>${auctionId} numaralı açık artırmaya davet edildiniz.</p>
