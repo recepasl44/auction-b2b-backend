@@ -11,7 +11,8 @@ const config: { [key: string]: Knex.Config } = {
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASS || '',
       database: process.env.DB_NAME || 'b2b_auction',
-      port:3306
+      port: 3306,
+      timezone: process.env.DB_TZ || '+03:00'
     },
     migrations: {
       directory: './database/migrations',
