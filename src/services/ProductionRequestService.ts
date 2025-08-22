@@ -28,19 +28,29 @@ class ProductionRequestService {
    */
   public static async getAllRequests(): Promise<any[]> {
     const sql = `
-      SELECT pr.*, p.*, u.name AS customerName, u.email AS customerEmail,
+      SELECT pr.*, 
+        p.id AS productId,
+        p.name AS productName,
+        p.category,
+        p.description AS productDescription,
+        p.priceType,
+        p.destinationPort,
+        p.orderQuantity,
+        p.createdAt AS productCreatedAt,
+        p.updatedAt AS productUpdatedAt,
+        u.name AS customerName, u.email AS customerEmail,
         CASE
           WHEN pr.status = 'rejected' THEN 'rejected'
           WHEN a.status = 'ended' THEN 'completed'
           WHEN a.id IS NOT NULL THEN 'accepted'
           ELSE 'pending'
         END AS status
-      FROM production_requests pr
-      LEFT JOIN products p ON pr.product_id = p.id
-      LEFT JOIN users u ON pr.customer_id = u.id
-      LEFT JOIN auctions a ON a.productionId = pr.id
-      ORDER BY pr.id DESC
-    `;
+        FROM production_requests pr
+        LEFT JOIN products p ON pr.product_id = p.id
+        LEFT JOIN users u ON pr.customer_id = u.id
+        LEFT JOIN auctions a ON a.productionId = pr.id
+        ORDER BY pr.id DESC
+      `;
     const [rows] = await pool.query(sql);
     return rows as any[];
   }
@@ -50,20 +60,30 @@ class ProductionRequestService {
    */
   public static async getRequestsByCustomer(customerId: number): Promise<any[]> {
     const sql = `
-      SELECT pr.*, p.*, u.name AS customerName, u.email AS customerEmail,
+      SELECT pr.*, 
+        p.id AS productId,
+        p.name AS productName,
+        p.category,
+        p.description AS productDescription,
+        p.priceType,
+        p.destinationPort,
+        p.orderQuantity,
+        p.createdAt AS productCreatedAt,
+        p.updatedAt AS productUpdatedAt,
+        u.name AS customerName, u.email AS customerEmail,
         CASE
           WHEN pr.status = 'rejected' THEN 'rejected'
           WHEN a.status = 'ended' THEN 'completed'
           WHEN a.id IS NOT NULL THEN 'accepted'
           ELSE 'pending'
         END AS status
-      FROM production_requests pr
-      LEFT JOIN products p ON pr.product_id = p.id
-      LEFT JOIN users u ON pr.customer_id = u.id
-      LEFT JOIN auctions a ON a.productionId = pr.id
-      WHERE pr.customer_id = ?
-      ORDER BY pr.id DESC
-    `;
+        FROM production_requests pr
+        LEFT JOIN products p ON pr.product_id = p.id
+        LEFT JOIN users u ON pr.customer_id = u.id
+        LEFT JOIN auctions a ON a.productionId = pr.id
+        WHERE pr.customer_id = ?
+        ORDER BY pr.id DESC
+      `;
     const [rows] = await pool.query(sql, [customerId]);
     return rows as any[];
   }
@@ -73,19 +93,29 @@ class ProductionRequestService {
    */
   public static async getRequestById(requestId: number): Promise<any | null> {
     const sql = `
-      SELECT pr.*, p.*, u.name AS customerName, u.email AS customerEmail,
+      SELECT pr.*, 
+        p.id AS productId,
+        p.name AS productName,
+        p.category,
+        p.description AS productDescription,
+        p.priceType,
+        p.destinationPort,
+        p.orderQuantity,
+        p.createdAt AS productCreatedAt,
+        p.updatedAt AS productUpdatedAt,
+        u.name AS customerName, u.email AS customerEmail,
         CASE
           WHEN pr.status = 'rejected' THEN 'rejected'
           WHEN a.status = 'ended' THEN 'completed'
           WHEN a.id IS NOT NULL THEN 'accepted'
           ELSE 'pending'
         END AS status
-      FROM production_requests pr
-      LEFT JOIN products p ON pr.product_id = p.id
-      LEFT JOIN users u ON pr.customer_id = u.id
-      LEFT JOIN auctions a ON a.productionId = pr.id
-      WHERE pr.id = ?
-    `;
+        FROM production_requests pr
+        LEFT JOIN products p ON pr.product_id = p.id
+        LEFT JOIN users u ON pr.customer_id = u.id
+        LEFT JOIN auctions a ON a.productionId = pr.id
+        WHERE pr.id = ?
+      `;
     const [rows] = await pool.query(sql, [requestId]);
     if (!(rows as any[]).length) return null;
     return (rows as any[])[0];
