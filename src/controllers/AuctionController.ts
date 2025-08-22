@@ -292,7 +292,14 @@ const userRole = (req as any).userRole;
       ]);
 
       const newId = (result as any).insertId;
-         if (Array.isArray(supplierIds) && supplierIds.length > 0) {
+
+      // Açık artırma oluşturulduğunda ilgili üretim talebini kabul et
+      await pool.query(
+        `UPDATE production_requests SET status = 'accepted' WHERE id = ?`,
+        [productionId]
+      );
+
+      if (Array.isArray(supplierIds) && supplierIds.length > 0) {
         await AuctionInviteService.inviteManufacturers(newId, supplierIds);
       }
       return res.status(201).json({ message: 'Açık artırma oluşturuldu', auctionId: newId });
