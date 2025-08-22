@@ -25,12 +25,14 @@ const userRole = (req as any).userRole;
 
       let baseQuery = `
         SELECT DISTINCT a.*,
-               pr.product_id AS product_id,
-               pr.product_name AS product_name,
+               COALESCE(pr.product_id, p.id) AS product_id,
+               COALESCE(pr.product_name, p.name) AS product_name,
                pr.customer_id AS customer_id,
-               u.name AS customerName, u.email AS customerEmail
+               u.name AS customerName, u.email AS customerEmail,
+               p.category AS product_category
         FROM auctions a
         LEFT JOIN production_requests pr ON a.productionId = pr.id
+        LEFT JOIN products p ON pr.product_id = p.id
         LEFT JOIN users u ON pr.customer_id = u.id
      `;
       let params: any[] = [];
@@ -54,19 +56,23 @@ const userRole = (req as any).userRole;
         // Resolve product image
         if (auc.product_id) {
           const p = await ProductService.getById(auc.product_id);
-          if (p && p.images && p.images.length) {
-            auc.productImage = fileUrl(
-              req.protocol,
-              req.get('host') || '',
-              p.images[0]
-            );
+          if (p) {
+            auc.product_id = auc.product_id || p.id;
+            auc.product_name = auc.product_name || p.name;
+            if (p.images && p.images.length) {
+              auc.product_image = fileUrl(
+                req.protocol,
+                req.get('host') || '',
+                p.images[0]
+              );
+            }
           }
         } else if (auc.product_name) {
           const extraName = findImagesForProduct(auc.product_name);
           const extraCategory = findImagesForCategory(auc.product_name);
           const imgs = Array.from(new Set([...extraName, ...extraCategory]));
           if (imgs.length) {
-            auc.productImage = fileUrl(
+            auc.product_image = fileUrl(
               req.protocol,
               req.get('host') || '',
               imgs[0]
@@ -119,12 +125,14 @@ const userRole = (req as any).userRole;
       const userRole = (req as any).userRole;
       const [rows] = await pool.query(
         `SELECT a.*,
-                pr.product_id AS product_id,
-                pr.product_name AS product_name,
+                COALESCE(pr.product_id, p.id) AS product_id,
+                COALESCE(pr.product_name, p.name) AS product_name,
                 pr.customer_id AS customer_id,
-                u.name AS customerName, u.email AS customerEmail
+                u.name AS customerName, u.email AS customerEmail,
+                p.category AS product_category
          FROM auctions a
          LEFT JOIN production_requests pr ON a.productionId = pr.id
+         LEFT JOIN products p ON pr.product_id = p.id
          LEFT JOIN users u ON pr.customer_id = u.id
          WHERE a.id = ?`,
         [auctionId]
@@ -157,10 +165,12 @@ const userRole = (req as any).userRole;
       if (auction.product_id) {
         const product = await ProductService.getById(auction.product_id);
         if (product) {
+          auction.product_id = auction.product_id || product.id;
+          auction.product_name = auction.product_name || product.name;
           product.images = (product.images || []).map((img: string) =>
             fileUrl(req.protocol, req.get('host') || '', img)
           );
-          auction.productImage = product.images.length ? product.images[0] : null;
+          auction.product_image = product.images.length ? product.images[0] : null;
           auction.product = product;
         }
       } else if (auction.product_name) {
@@ -168,7 +178,7 @@ const userRole = (req as any).userRole;
         const extraCategory = findImagesForCategory(auction.product_name);
         const imgs = Array.from(new Set([...extraName, ...extraCategory]));
         if (imgs.length) {
-          auction.productImage = fileUrl(
+          auction.product_image = fileUrl(
             req.protocol,
             req.get('host') || '',
             imgs[0]
