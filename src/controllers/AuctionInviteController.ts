@@ -102,32 +102,20 @@ class AuctionInviteController {
   }
 
   /**
-   * Daveti kabul etmek için kısayol endpointi
-   * POST /api/auctions/invites/:inviteId/accept
+   * Daveti e-posta linki ile kabul et
+   * GET /api/auctions/invites/:inviteId/accept
    */
   public static async accept(req: Request, res: Response) {
     try {
       const inviteId = parseInt(req.params.inviteId, 10);
-      const userRole = (req as any).userRole;
-      const userId = (req as any).userId;
-
-      if (userRole !== 'manufacturer') {
-        return res.status(403).json({ message: 'Bu işlemi sadece üreticiler yapabilir' });
-      }
-
-      const invite = await AuctionInviteService.getInviteById(inviteId);
-      if (!invite) {
-        return res.status(404).json({ message: 'Davet kaydı bulunamadı' });
-      }
-      if (invite.manufacturerId !== userId) {
-        return res.status(403).json({ message: 'Bu davet size ait değil' });
-      }
 
       const updated = await AuctionInviteService.respondToInvite(inviteId, 'accepted');
       if (!updated) {
-        return res.status(500).json({ message: 'Davet durumu güncellenemedi' });
+        return res.status(404).json({ message: 'Davet kaydı bulunamadı' });
       }
-      return res.json({ message: 'Davet kabul edildi', inviteId });
+
+      const redirectUrl = `${process.env.FRONTEND_URL || 'https://panel.demaxtore.com'}/auctions/list`;
+      return res.redirect(redirectUrl);
     } catch (error) {
       console.error('AuctionInviteController.accept Error:', error);
       return res.status(500).json({ message: 'Sunucu hatası' });
