@@ -90,16 +90,30 @@ class NotificationService {
     text: string,
     html?: string
   ) {
+    const secureEnv =
+      process.env.MAIL_SECURE || process.env.MAIL_ENCRYPTION || 'true';
     const transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST || 'smtp.yandex.com.tr',
       port: parseInt(process.env.MAIL_PORT || '465', 10),
-      secure: (process.env.MAIL_SECURE || 'true') === 'true',
+      secure: secureEnv === 'true' || secureEnv === 'ssl',
       auth: {
-        user: process.env.MAIL_USER || 'dev@recepaslan.com.tr',
-        pass: process.env.MAIL_PASS || 'ASLANr-3'
+        user:
+          process.env.MAIL_USERNAME ||
+          process.env.MAIL_USER ||
+          'dev@recepaslan.com.tr',
+        pass:
+          process.env.MAIL_PASSWORD ||
+          process.env.MAIL_PASS ||
+          'ASLANr-3'
       }
     });
-    const fromAddress = process.env.MAIL_FROM || process.env.MAIL_USER || 'no-reply@auction.com';
+    const fromAddress =
+      process.env.MAIL_FROM_ADDRESS ||
+      process.env.MAIL_FROM ||
+      process.env.MAIL_USERNAME ||
+      process.env.MAIL_USER ||
+      'no-reply@auction.com';
+    const fromName = process.env.MAIL_FROM_NAME || 'B2B Auction';
     // Translate text and HTML content to English before sending
     const translatedText = NotificationService.translateToEnglish(text);
     let translatedHtml = html ? NotificationService.translateToEnglish(html) : undefined;
@@ -118,7 +132,7 @@ class NotificationService {
     }
 
     const mailOptions: nodemailer.SendMailOptions = {
-      from: `"B2B Auction" <${fromAddress}>`,
+      from: `"${fromName}" <${fromAddress}>`,
       to,
       subject,
       text: translatedText,
