@@ -9,6 +9,7 @@ import ProductService from '../services/ProductService';
 import { fileUrl } from '../utils/url';
 import { findImagesForProduct, findImagesForCategory } from '../utils/productImages';
 import BidService from '../services/BidService';
+import NotificationService from '../services/NotificationService';
 
 /**
  * Bu controller hem direkt DB sorgularını içeriyor hem de AuctionService'i kısmen kullanıyor.
@@ -301,6 +302,32 @@ const userRole = (req as any).userRole;
 
       if (Array.isArray(supplierIds) && supplierIds.length > 0) {
         await AuctionInviteService.inviteManufacturers(newId, supplierIds);
+      }
+
+      // E-posta bildirimleri: müşteri ve adminlere haber ver
+      try {
+        const [custRows] = await pool.query(
+          `SELECT u.email, u.name FROM production_requests pr JOIN users u ON pr.customer_id = u.id WHERE pr.id = ? LIMIT 1`,
+          [productionId]
+        );
+        const customer = (custRows as any[])[0];
+
+        const [adminRows] = await pool.query(
+          `SELECT u.email FROM users u JOIN roles r ON u.role_id = r.id WHERE r.name = 'admin'`
+        );
+
+        const emails = new Set<string>();
+        if (customer?.email) emails.add(customer.email);
+        (adminRows as any[]).forEach((r: any) => emails.add(r.email));
+
+        const auctionLink = `${process.env.FRONTEND_URL || 'https://panel.demaxtore.com'}/auctions/${newId}`;
+        const text = `Yeni bir açık artırma oluşturuldu: ${auctionLink}`;
+        const html = `<p>Merhaba,</p><p>${title} başlıklı yeni bir açık artırma oluşturuldu.</p><p><a href="${auctionLink}">Detaylar</a></p>`;
+        for (const email of emails) {
+          await NotificationService.sendEmail(email, 'Yeni Açık Artırma', text, html);
+        }
+      } catch (mailErr) {
+        console.error('Mail gönderme hatası:', mailErr);
       }
       return res.status(201).json({ message: 'Açık artırma oluşturuldu', auctionId: newId });
     } catch (error) {
